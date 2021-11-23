@@ -112,19 +112,22 @@ $(document).ready(function() {
         let player1 = new Player('James', false);
         let player2 = new Player('CPU', true);
 
-        players.push(player1, player2);
-        $('.name-display').text(players[0].name);
+        // players.push(player1, player2);
+        players.push(new Player('James', false), new Player('CPU', true));
+        $('.p1-name').text(players[0].name);
+        $('.p2-name').text(players[1].name);
 
         // enable game buttons
         buttonsReady(players);
     })();
     function buttonsReady(players) {
+        // select the round's move options
         let options = {
             rock:   $('#move-rock'),
             paper:  $('#move-paper'),
             scissors: $('#move-scissors')
         }
-
+        // listen for input
         options.rock.on('click', function (event) {
             players[0].choose('rock');
             players[1].choose('rock');
@@ -133,24 +136,70 @@ $(document).ready(function() {
         options.paper.on('click', function (event){
             players[0].choose('paper');
             players[1].choose('paper');
+            gameManagement(players);
         });
         options.scissors.on('click', function (event){
             players[0].choose('scissors');
             players[1].choose('scissors');
-
+            gameManagement(players);
         });
     }
+    // take care of all the game processing after player choices have been taken
     function gameManagement (players) {
+        // evaluate a new round
         let round = playRound(players)
+        // push results into the game history
         games.push(round);
-        $('#game-tbody').prepend(addTableRow(round, games.length));
+        // modify page to display results
+        roundOverHtmlManagement();
         console.log(games);
     }
     function playRound(players) {
-        let newGame = new Game(players[0], players[1]);
-        newGame.runGame();
-        console.log(newGame.logResults());
-        return newGame;
+        let round = new Game(players[0], players[1]);
+        round.runGame();
+        console.log(round.logResults());
+        return round;
+    }
+    // create a div to replace the last round's game results with the new round's results
+    function displayRoundResults(round) {
+        // <div id="game-area" class="m-3 row">
+        //            <div class="col-4" id="game-p1-choice"></div>
+        //             <div class="col-4" id="game-result"></div>
+        //             <div class="col-4" id="game-p2-choice"></div>
+        //  </div>
+        const p1Choice = $(document.createElement('div'))
+            .addClass('col-4')
+            .text(round.p1.choice)
+            .attr('id', 'game-p1-choice');
+        const gameResult = $(document.createElement('div'))
+            .addClass('col-4')
+            .text(round.result)
+            .attr('id', 'game-result');
+        const p2Choice = $(document.createElement('div'))
+            .addClass('col-4')
+            .text(round.p2.choice)
+            .attr('id', 'game-p2-choice');
+
+        return $(document.createElement('div'))
+            .addClass('m-3 row')
+            .attr('id', 'game-area')
+            .append(p1Choice, gameResult, p2Choice);
+
+    }
+    function roundOverHtmlManagement () {
+        // only show log of rounds if there are more than 1 round played
+        if (games.length > 1) {
+            let lastRound = games[games.length - 2];
+            let lastRoundNum = games.length - 1
+            // add a new table row detailing the last round, prepending it so it's latest first
+            $('#game-tbody').prepend(addTableRow(lastRound, lastRoundNum));
+        }
+        let round = games[games.length - 1];
+        let roundNum = games.length;
+        // show this round's results
+        $('#game-area').replaceWith(displayRoundResults(round, roundNum));
+
+
     }
 
     function getRandomRPSGameChoice() {
@@ -173,25 +222,27 @@ $(document).ready(function() {
         // 1         'paper'    'scissors'      player2
 
     }
-    function addTableRow(game, num) {
+
+    // addTableRow builds a new table row element with the last round's details
+    function addTableRow(round, roundNum) {
         // <tr>
-        //     <th scope="row">game number</th>
+        //     <th scope="row">round number</th>
         //     <td>p1 move</td>
         //     <td>p2 move</td>
-        //     <td>game winner</td>
+        //     <td>round winner</td>
         // </tr>
-        const gameNumber = $(document.createElement("th"))
+        const roundNumber = $(document.createElement("th"))
             .attr('scope', 'row')
-            .text(num);
+            .text(roundNum);
         const p1Move = $(document.createElement('td'))
-            .text(game.p1.choice);
+            .text(round.p1.choice);
         const p2Move = $(document.createElement('td'))
-            .text(game.p2.choice);
+            .text(round.p2.choice);
         const results = $(document.createElement('td'))
-            .text((game.winner !== 0) ? game.winner : game.result);
+            .text((round.winner !== 0) ? round.winner : round.result);
 
         return $(document.createElement('tr'))
-            .append(gameNumber)
+            .append(roundNumber)
             .append(p1Move)
             .append(p2Move)
             .append(results);

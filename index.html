@@ -26,14 +26,16 @@
         </form>
     </div>
     <div class="col-12" id="game-cont">
-        <div class="container">Pick your move, <span class="name-display"></span>!</div>
+        <div class="container">Pick your move, <span class="p1-name"></span>!</div>
         <div id="move-area" class="row text-center m-3">
             <button class="col btn-primary mx-3" id="move-rock">Rock</button>
             <button class="col btn-primary mx-3" id="move-paper">Paper</button>
             <button class="col btn-primary mx-3" id="move-scissors">Scissors</button>
         </div>
-        <div id="game-area" class="m-3">
-
+        <div id="game-area" class="m-3 row">
+<!--            <div class="col-4" id="game-p1-choice"></div>-->
+<!--            <div class="col-4" id="game-result"></div>-->
+<!--            <div class="col-4" id="game-p2-choice"></div>-->
         </div>
     </div>
 </section>
@@ -43,8 +45,8 @@
             <thead>
             <tr>
                 <th scope="col">Round #</th>
-                <th scope="col"><span class="name-display"></span></th>
-                <th scope="col">CPU</th>
+                <th scope="col"><span class="p1-name"></span></th>
+                <th scope="col"><span class="p2-name"></span></th>
                 <th scope="col">Winner</th>
             </tr>
             </thead>
