@@ -1,7 +1,8 @@
 $(document).ready(function() {
-    // player prototype
+    // player constructor
     function Player (name, type) {
         this.name = name;
+        // we can set this to true thru constructor, flagging a player for cpu control
         this.cpu = type;
         this.record = {
             wins: 0,
@@ -23,6 +24,7 @@ $(document).ready(function() {
         }
         this.choice = null;
         this.choose = function (move) {
+            // moves are chosen with RNG for cpu players
             if (this.cpu) {
                 this.choice = getRandomRPSGameChoice();
             } else {
@@ -32,7 +34,7 @@ $(document).ready(function() {
         };
     }
 
-    // game round prototype
+    // game round constructor
     function Game (player1, player2) {
         this.p1 = {
             name: player1.name,
@@ -44,7 +46,8 @@ $(document).ready(function() {
         };
         this.winner = null;
         this.result = null;
-        this.logResults = function() {
+        // output a string describing the latest round's results
+        this.stringifyResults = function() {
             let str = `${this.p1.name} picked ${this.p1.choice}. ${this.p2.name} picked ${this.p2.choice}.`;
             if (this.winner === 0) {
                 str += ` Game ${this.result}.`;
@@ -110,29 +113,50 @@ $(document).ready(function() {
     let games = [];
     let players = [];
 
-    // $('#name-submit').on('click', function (event) {
-    //     let player = new Player($('#name-add').val(), false);
-    //
-    //     players.push(player, cpu);
-    //     $('.name-display').text(player.name);
-    //
-    //     // enable game buttons
-    //     buttonsReady(player);
-    //
-    // });
-    (function(){ // this function is just for testing, skips game ready state
-        let player1 = new Player('James', false);
-        let player2 = new Player('CPU', true);
 
-        // setup players, for now a user and a cpu
-        players.push(new Player('James', false), new Player('CPU', true));
-        // personalize displays to reflect player names
-        $('.p1-name').text(players[0].name);
-        $('.p2-name').text(players[1].name);
+    // do NOT leave in production version i s2g
+    let DEBUG_MODE = {
+        // when enabled, skips setup/personalization steps
+        skipIntro: true,
+        // if set to value greater than 0, plays value * games automatically
+        autoPlay: 300
+    };
 
-        // enable game buttons
-        buttonsReady(players);
-    })();
+
+    if (DEBUG_MODE.skipIntro) {
+        (function(){ // this function is just for testing, skips game ready state
+            // setup players, for now a user and a cpu
+            players.push(new Player('debug mode', false), new Player('CPU', true));
+            // personalize displays to reflect player names
+            $('.p1-name').text(players[0].name);
+            $('.p2-name').text(players[1].name);
+
+            // debug mode autoplay
+            if (DEBUG_MODE.autoPlay > 0) {
+                players[0].cpu = true;
+                for (let i = 0; i <= DEBUG_MODE.autoPlay; i++) {
+                    players[0].choose('rock');
+                    players[1].choose('rock');
+                    gameManagement(players);
+                }
+                players[0].cpu = false;
+            }
+
+            // enable game buttons
+            buttonsReady(players);
+        })();
+    } else {
+        $('#name-submit').on('click', function (event) {
+            let player = new Player($('#name-add').val(), false);
+
+            players.push(player, new Player('CPU', true));
+            $('.p1-name').text(players[0].name);
+            $('.p2-name').text(players[1].name);
+
+            // game ready, enable game buttons
+            buttonsReady(players);
+        });
+    }
     function buttonsReady(players) {
         // select the round's move options
         let options = {
@@ -173,7 +197,7 @@ $(document).ready(function() {
     function playRound(players) {
         let round = new Game(players[0], players[1]);
         round.runGame();
-        // console.log(round.logResults());
+        // console.log(round.stringifyResults());
         return round;
     }
 
@@ -258,6 +282,7 @@ $(document).ready(function() {
                 .addClass('col-4')
                 .text(resultString)
                 .attr('id', 'game-result');
+
             const p2Choice = $(document.createElement('div'))
                 .addClass('col-4')
                 .text(round.p2.choice)
@@ -267,7 +292,6 @@ $(document).ready(function() {
                 .addClass('m-3 row')
                 .attr('id', 'game-area')
                 .append(p1Choice, gameResult, p2Choice);
-
         }
     }
     function getRandomRPSGameChoice() {
