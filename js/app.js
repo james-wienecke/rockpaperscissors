@@ -11,7 +11,7 @@ $(document).ready(function() {
                 return 'scissors';
         }
     }
-    for (let i = 0; i  <= 10; i++) {
+    for (let i = 0; i  <= 1000; i++) {
         let player1 = {
             choice: getRandomRPSGameChoice(),
             name: 'Player 1',
@@ -21,15 +21,24 @@ $(document).ready(function() {
             choice: getRandomRPSGameChoice(),
             name: 'CPU',
         };
-        let game = evalRPSGameResults(player1, player2)
-        games.push(game);
+        games.push(createRPSGame(player1, player2));
     }
 
-    for (let game of games) {
-        console.log(game.results());
-    }
+    // testing stuff, data analysis experiment
+    // let p1wins = 0;
+    // let p2wins = 0;
+    // let draws = 0;
+    // for (let game of games) {
+    //     console.log(game.results());
+    //     if (game.winner === game.p1.name) p1wins++;
+    //     if (game.winner === game.p2.name) p2wins++;
+    //     if (game.winner === 0) draws++;
+    // }
+    // console.log('Player 1 wins:', p1wins);
+    // console.log('CPU wins:', p2wins);
+    // console.log('Draw games:', draws);
 
-    function evalRPSGameResults (player1, player2) {
+    function createRPSGame (player1, player2) {
         let game = {
             p1: player1,
             p2: player2,
