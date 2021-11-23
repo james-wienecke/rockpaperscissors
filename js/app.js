@@ -98,8 +98,6 @@ $(document).ready(function() {
     let games = [];
     let players = [];
 
-    let cpu = new Player('CPU', true);
-
     // $('#name-submit').on('click', function (event) {
     //     let player = new Player($('#name-add').val(), false);
     //
@@ -111,15 +109,16 @@ $(document).ready(function() {
     //
     // });
     (function(){ // this function is just for testing, skips game ready state
-        let player = new Player('James', false);
+        let player1 = new Player('James', false);
+        let player2 = new Player('CPU', true);
 
-        players.push(player, cpu);
-        $('.name-display').text(player.name);
+        players.push(player1, player2);
+        $('.name-display').text(players[0].name);
 
         // enable game buttons
-        buttonsReady(player);
+        buttonsReady(players);
     })();
-    function buttonsReady(player) {
+    function buttonsReady(players) {
         let options = {
             rock:   $('#move-rock'),
             paper:  $('#move-paper'),
@@ -127,27 +126,28 @@ $(document).ready(function() {
         }
 
         options.rock.on('click', function (event) {
-            player.choose('rock');
-            games.push(playRound(player, cpu));
-            $('#game-tbody').prepend(addTableRow(games[games.length - 1], games.length));
-            console.log(games);
+            players[0].choose('rock');
+            players[1].choose('rock');
+            gameManagement(players);
         });
         options.paper.on('click', function (event){
-            player.choose('paper');
-            games.push(playRound(player, cpu));
-            $('#game-tbody').prepend(addTableRow(games[games.length - 1], games.length));
-            console.log(games);
+            players[0].choose('paper');
+            players[1].choose('paper');
         });
         options.scissors.on('click', function (event){
-            player.choose('scissors');
-            games.push(playRound(player, cpu));
-            $('#game-tbody').prepend(addTableRow(games[games.length - 1], games.length));
-            console.log(games);
+            players[0].choose('scissors');
+            players[1].choose('scissors');
+
         });
     }
-    function playRound(player, cpu) {
-        cpu.choose();
-        let newGame = new Game(player, cpu);
+    function gameManagement (players) {
+        let round = playRound(players)
+        games.push(round);
+        $('#game-tbody').prepend(addTableRow(round, games.length));
+        console.log(games);
+    }
+    function playRound(players) {
+        let newGame = new Game(players[0], players[1]);
         newGame.runGame();
         console.log(newGame.logResults());
         return newGame;
@@ -164,7 +164,8 @@ $(document).ready(function() {
         }
     }
 
-    function buildGameHistory() {
+    function buildGameHistory(history) {
+        // Todo: create system for saving and loading records from local storage
         // create a table-like object
         // each played game gets a row like:
         // round     player1     player2        winner
@@ -194,57 +195,5 @@ $(document).ready(function() {
             .append(p1Move)
             .append(p2Move)
             .append(results);
-    }
-
-    function testGames() {
-        for (let i = 0; i <= 1000; i++) {
-            let player1 = {
-                choice: getRandomRPSGameChoice(),
-                name: 'Player 1',
-            };
-
-            let player2 = {
-                choice: getRandomRPSGameChoice(),
-                name: 'CPU',
-            };
-            // games.push(createRPSGame(player1, player2));
-            // testing stuff, data analysis experiment
-            // let p1wins = 0;
-            // let p2wins = 0;
-            // let draws = 0;
-            // for (let game of games) {
-            //     console.log(game.results());
-            //     if (game.winner === game.p1.name) p1wins++;
-            //     if (game.winner === game.p2.name) p2wins++;
-            //     if (game.winner === 0) draws++;
-            // }
-            // console.log('Player 1 wins:', p1wins);
-            // console.log('CPU wins:', p2wins);
-            // console.log('Draw games:', draws);
-        }
-    }
-
-
-    // function createRPSGame (player1, player2) {
-    //     let game = {
-    //         p1: player1,
-    //         p2: player2,
-    //         winner: null,
-    //         result: null,
-    //         results: function() {
-    //             let str = `${this.p1.name} picked ${this.p1.choice}. ${this.p2.name} picked ${this.p2.choice}.`
-    //             if (this.winner === 0) {
-    //                 str += ` Game ${this.result}.`;
-    //             } else {
-    //                 str += ` ${this.winner} wins!`;
-    //             }
-    //             return str;
-    //         }
-    //     }
-    //
-    // }
-
-    function setPlayerName(player, name) {
-
     }
 });
