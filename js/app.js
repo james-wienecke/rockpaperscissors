@@ -107,7 +107,6 @@ $(document).ready(function() {
         }
     }
     // setup stuff
-    console.log('Would you like to play a game?');
     let games = [];
     let players = [];
 
@@ -164,6 +163,7 @@ $(document).ready(function() {
         let round = playRound(players)
         // update player stats
         updatePlayerStats(players, round);
+        // console.log(`${players[0].name}'s win rate: ${players[0].record.winrate()}`)
         // push results into the game history
         games.push(round);
         // modify page to display results
@@ -173,7 +173,7 @@ $(document).ready(function() {
     function playRound(players) {
         let round = new Game(players[0], players[1]);
         round.runGame();
-        console.log(round.logResults());
+        // console.log(round.logResults());
         return round;
     }
 
@@ -196,6 +196,9 @@ $(document).ready(function() {
     function roundOverHtmlManagement () {
         // only show log of rounds if there are more than 1 round played
         if (games.length > 1) {
+            // reveal history table head
+            showHistoryTable();
+            // prepare last round's data
             let lastRound = games[games.length - 2];
             let lastRoundNum = games.length - 1
             // add a new table row detailing the last round, prepending it so it's latest first
@@ -205,6 +208,10 @@ $(document).ready(function() {
         let roundNum = games.length;
         // show this round's results
         $('#game-area').replaceWith(displayRoundResults(round, roundNum));
+
+        function showHistoryTable() {
+            $('#game-table').show();
+        }
 
 
         // addTableRow builds a new table row element with the last round's details
