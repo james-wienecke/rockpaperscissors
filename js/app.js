@@ -23,16 +23,18 @@ $(document).ready(function() {
             }
         }
         this.choice = null;
-        this.choose = function (move) {
-            // moves are chosen with RNG for cpu players
-            if (this.cpu) {
-                this.choice = getRandomRPSGameChoice();
-            } else {
-                this.choice = move;
-            }
-            return this.choice;
-        };
     }
+
+    // player prototype methods
+    Player.prototype.choose = function (move) {
+        // moves are chosen with RNG for cpu players
+        if (this.cpu) {
+            this.choice = getRandomRPSGameChoice();
+        } else {
+            this.choice = move;
+        }
+        return this.choice;
+    };
 
     // game round constructor
     function Game (player1, player2) {
@@ -46,69 +48,71 @@ $(document).ready(function() {
         };
         this.winner = null;
         this.result = null;
-        // output a string describing the latest round's results
-        this.stringifyResults = function() {
-            let str = `${this.p1.name} picked ${this.p1.choice}. ${this.p2.name} picked ${this.p2.choice}.`;
-            if (this.winner === 0) {
-                str += ` Game ${this.result}.`;
-            } else {
-                str += ` ${this.winner} wins!`;
-            }
-            return str;
-        }
-        this.runGame = function () {
-           switch (this.p1.choice) {
-               case 'rock':
-                   switch (this.p2.choice) {
-                       case 'rock':
-                           this.winner = 0;
-                           this.result = 'draw';
-                           break;
-                       case 'paper':
-                           this.winner = this.p2.name;
-                           this.result = 'win';
-                           break;
-                       case 'scissors':
-                           this.winner = this.p1.name;
-                           this.result = 'win';
-                           break;
-                   }
-                   break;
-               case 'paper':
-                   switch (this.p2.choice) {
-                       case 'rock':
-                           this.winner = this.p1.name;
-                           this.result = 'win';
-                           break;
-                       case 'paper':
-                           this.winner = 0;
-                           this.result = 'draw';
-                           break;
-                       case 'scissors':
-                           this.winner = this.p2.name;
-                           this.result = 'win';
-                           break;
-                   }
-                   break;
-               case 'scissors':
-                   switch (this.p2.choice) {
-                       case 'rock':
-                           this.winner = this.p2.name;
-                           this.result = 'win';
-                           break;
-                       case 'paper':
-                           this.winner = this.p1.name;
-                           this.result = 'win';
-                           break;
-                       case 'scissors':
-                           this.winner = 0;
-                           this.result = 'draw';
-                           break;
-                   }
-                   break;
-           }
+    }
+    // Game prototype methods
+    Game.prototype.runGame = function () {
+        switch (this.p1.choice) {
+            case 'rock':
+                switch (this.p2.choice) {
+                    case 'rock':
+                        this.winner = 0;
+                        this.result = 'draw';
+                        break;
+                    case 'paper':
+                        this.winner = this.p2.name;
+                        this.result = 'win';
+                        break;
+                    case 'scissors':
+                        this.winner = this.p1.name;
+                        this.result = 'win';
+                        break;
+                }
+                break;
+            case 'paper':
+                switch (this.p2.choice) {
+                    case 'rock':
+                        this.winner = this.p1.name;
+                        this.result = 'win';
+                        break;
+                    case 'paper':
+                        this.winner = 0;
+                        this.result = 'draw';
+                        break;
+                    case 'scissors':
+                        this.winner = this.p2.name;
+                        this.result = 'win';
+                        break;
+                }
+                break;
+            case 'scissors':
+                switch (this.p2.choice) {
+                    case 'rock':
+                        this.winner = this.p2.name;
+                        this.result = 'win';
+                        break;
+                    case 'paper':
+                        this.winner = this.p1.name;
+                        this.result = 'win';
+                        break;
+                    case 'scissors':
+                        this.winner = 0;
+                        this.result = 'draw';
+                        break;
+                }
+                break;
         }
     }
+    Game.prototype.stringifyResults = function() {
+        // output a string describing the latest round's results
+        let str = `${this.p1.name} picked ${this.p1.choice}. ${this.p2.name} picked ${this.p2.choice}.`;
+        if (this.winner === 0) {
+            str += ` Game ${this.result}.`;
+        } else {
+            str += ` ${this.winner} wins!`;
+        }
+        return str;
+    }
+
     // setup stuff
     let games = [];
     let players = [];
