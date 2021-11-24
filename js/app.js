@@ -22,10 +22,9 @@ $(document).ready(function() {
                 }
             }
         }
-        this.choice = null;
+        this.choice = undefined;
     }
-
-    // player prototype methods
+    // Player prototype methods
     Player.prototype.choose = function (move) {
         // moves are chosen with RNG for cpu players
         if (this.cpu) {
@@ -120,11 +119,11 @@ $(document).ready(function() {
     // do NOT leave in production version i s2g
     let DEBUG_MODE = {
         // when enabled, skips setup/personalization steps
-        skipIntro: true,
+        skipIntro: false,
         // if set to value greater than 0, plays value * games automatically
-        autoPlay: 300,
+        autoPlay: 0,
         // console.log round results
-        verboseRounds: true,
+        verboseRounds: false,
         // console.log round history array
         verboseHistory: false,
         // log player win rate (-1 off | 0 player1 | 1 player2 | 2 both)
@@ -164,11 +163,18 @@ $(document).ready(function() {
             $('.p1-name').text(players[0].name);
             $('.p2-name').text(players[1].name);
 
-            // game ready, enable game buttons
+            // make game ready, and enable game buttons
             buttonsReady(players);
         });
     }
+    function pageSetup () {
+        $('game-cont').show();
+    }
     function buttonsReady(players) {
+        // hide name entry area (for now)
+        $('#name-cont').hide();
+        // show game area
+        $('#game-cont').show();
         // select the round's move options
         let options = {
             rock:   $('#move-rock'),
