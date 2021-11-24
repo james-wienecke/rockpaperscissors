@@ -113,15 +113,19 @@ $(document).ready(function() {
     let games = [];
     let players = [];
 
-
     // do NOT leave in production version i s2g
     let DEBUG_MODE = {
         // when enabled, skips setup/personalization steps
         skipIntro: true,
         // if set to value greater than 0, plays value * games automatically
-        autoPlay: 300
+        autoPlay: 300,
+        // console.log round results
+        verboseRounds: true,
+        // console.log round history array
+        verboseHistory: false,
+        // log player win rate (-1 off | 0 player1 | 1 player2 | 2 both)
+        logWinrate: -1,
     };
-
 
     if (DEBUG_MODE.skipIntro) {
         (function(){ // this function is just for testing, skips game ready state
@@ -146,10 +150,13 @@ $(document).ready(function() {
             buttonsReady(players);
         })();
     } else {
+        // non-debug mode game start here
         $('#name-submit').on('click', function (event) {
+            // player 1 created and given submitted name
             let player = new Player($('#name-add').val(), false);
-
+            // set up players array with player 1 and a CPU
             players.push(player, new Player('CPU', true));
+            // personalize displays to reflect player names
             $('.p1-name').text(players[0].name);
             $('.p2-name').text(players[1].name);
 
@@ -163,7 +170,7 @@ $(document).ready(function() {
             rock:   $('#move-rock'),
             paper:  $('#move-paper'),
             scissors: $('#move-scissors')
-        }
+        };
         // listen for input
         options.rock.on('click', function (event) {
             players[0].choose('rock');
@@ -181,15 +188,30 @@ $(document).ready(function() {
             gameManagement(players);
         });
     }
-    // take care of all the game processing after player choices have been taken
+    // take care of all the game processing after player choices have been made
     function gameManagement (players) {
         // evaluate a new round
         let round = playRound(players)
         // update player stats
         updatePlayerStats(players, round);
-        // console.log(`${players[0].name}'s win rate: ${players[0].record.winrate()}`)
+        // debug options for verbose logging of player win rates
+        switch (DEBUG_MODE.logWinrate) {
+            case 2:
+                console.log(`${players[0].name}'s win rate: ${players[0].record.winrate()}`);
+                console.log(`${players[1].name}'s win rate: ${players[1].record.winrate()}`);
+                break;
+            case 1:
+                console.log(`${players[1].name}'s win rate: ${players[1].record.winrate()}`);
+                break;
+            case 0:
+                console.log(`${players[0].name}'s win rate: ${players[0].record.winrate()}`);
+                break;
+        }
+
         // push results into the game history
         games.push(round);
+        // debug logging option
+        if (DEBUG_MODE.verboseHistory) console.log(games);
         // modify page to display results
         roundOverHtmlManagement();
     }
@@ -197,7 +219,8 @@ $(document).ready(function() {
     function playRound(players) {
         let round = new Game(players[0], players[1]);
         round.runGame();
-        // console.log(round.stringifyResults());
+        // debug logging option
+        if (DEBUG_MODE.verboseRounds) console.log(round.stringifyResults());
         return round;
     }
 
@@ -220,8 +243,7 @@ $(document).ready(function() {
     function roundOverHtmlManagement () {
         // only show log of rounds if there are more than 1 round played
         if (games.length > 1) {
-            // reveal history table head
-            showHistoryTable();
+            if (games.length === 2) showHistoryTable(); // undo display: none on table head
             // prepare last round's data
             let lastRound = games[games.length - 2];
             let lastRoundNum = games.length - 1
@@ -233,67 +255,79 @@ $(document).ready(function() {
         // show this round's results
         $('#game-area').replaceWith(displayRoundResults(round, roundNum));
 
+        // flip the round table's display style back from display:none
         function showHistoryTable() {
             $('#game-table').show();
         }
 
-
         // addTableRow builds a new table row element with the last round's details
         function addTableRow(round, roundNum) {
+            // create content for populating a table for the round results
+            // each played game gets a row like:
+            // round     player1     player2        winner
+            // 2         'rock'     'scissors'      player1
+            // 1         'paper'    'scissors'      player2
+
+            // layout:
             // <tr>
             //     <th scope="row">round number</th>
             //     <td>p1 move</td>
             //     <td>p2 move</td>
             //     <td>round winner</td>
             // </tr>
-            const roundNumber = $(document.createElement("th"))
+            const $roundNumber = $(document.createElement("th"))
                 .attr('scope', 'row')
                 .text(roundNum);
-            const p1Move = $(document.createElement('td'))
+            const $p1Move = $(document.createElement('td'))
                 .text(round.p1.choice);
-            const p2Move = $(document.createElement('td'))
+            const $p2Move = $(document.createElement('td'))
                 .text(round.p2.choice);
-            const results = $(document.createElement('td'))
+            const $results = $(document.createElement('td'))
                 .text((round.winner !== 0) ? round.winner : round.result);
 
             return $(document.createElement('tr'))
-                .append(roundNumber)
-                .append(p1Move)
-                .append(p2Move)
-                .append(results);
+                .append($roundNumber, $p1Move, $p2Move, $results);
         }
         // create a div to replace the last round's game results with the new round's results
         function displayRoundResults(round) {
+            // layout:
             // <div id="game-area" class="m-3 row">
             //            <div class="col-4" id="game-p1-choice"></div>
             //             <div class="col-4" id="game-result"></div>
             //             <div class="col-4" id="game-p2-choice"></div>
             //  </div>
-            const p1Choice = $(document.createElement('div'))
+
+            // Player 1's move
+            const $p1Choice = $(document.createElement('div'))
                 .addClass('col-4')
                 .text(round.p1.choice)
                 .attr('id', 'game-p1-choice');
+
             // prepare a short string summarizing winner unless it was a draw
             let resultString = '';
             if (round.winner !== 0) resultString = `${round.winner} ${round.result}s!`
             else resultString = round.result;
-
-            const gameResult = $(document.createElement('div'))
+            // Round results
+            const $gameResult = $(document.createElement('div'))
                 .addClass('col-4')
                 .text(resultString)
                 .attr('id', 'game-result');
 
-            const p2Choice = $(document.createElement('div'))
+            // player 2's move
+            const $p2Choice = $(document.createElement('div'))
                 .addClass('col-4')
                 .text(round.p2.choice)
                 .attr('id', 'game-p2-choice');
 
+            // return a #game-area div to replace the existing one
             return $(document.createElement('div'))
                 .addClass('m-3 row')
                 .attr('id', 'game-area')
-                .append(p1Choice, gameResult, p2Choice);
+                .append($p1Choice, $gameResult, $p2Choice);
         }
     }
+
+    // return a random valid rock paper scissors move
     function getRandomRPSGameChoice() {
         switch (Math.floor(Math.random() * 3)) {
             case 0:
@@ -304,13 +338,9 @@ $(document).ready(function() {
                 return 'scissors';
         }
     }
+
     function buildGameHistory(history) {
         // Todo: create system for saving and loading records from local storage
-        // create a table-like object
-        // each played game gets a row like:
-        // round     player1     player2        winner
-        // 2         'rock'     'scissors'      player1
-        // 1         'paper'    'scissors'      player2
 
     }
 
