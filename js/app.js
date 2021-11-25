@@ -119,9 +119,9 @@ $(document).ready(function() {
     // do NOT leave in production version i s2g
     let DEBUG_MODE = {
         // when enabled, skips setup/personalization steps
-        skipIntro: false,
+        skipIntro: true,
         // if set to value greater than 0, plays value * games automatically
-        autoPlay: 0,
+        autoPlay: 100,
         // console.log round results
         verboseRounds: false,
         // console.log round history array
@@ -142,8 +142,8 @@ $(document).ready(function() {
             if (DEBUG_MODE.autoPlay > 0) {
                 players[0].cpu = true;
                 for (let i = 0; i <= DEBUG_MODE.autoPlay; i++) {
-                    players[0].choose('rock');
-                    players[1].choose('rock');
+                    players[0].choose();
+                    players[1].choose();
                     gameManagement(players);
                 }
                 players[0].cpu = false;
