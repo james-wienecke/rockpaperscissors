@@ -14,7 +14,7 @@
     <h1 class="col text-center">Rock, Paper, Scissors!</h1>
 </section>
 <section class="row my-4">
-    <div class="col-12">
+    <div class="col-12" id="name-cont">
         <form id="player-setup">
             <div class="input-group mb-3">
                 <div class="input-group-prepend">
@@ -25,7 +25,7 @@
             <button type="button" class="btn btn-primary btn-block" id="name-submit">Set Name</button>
         </form>
     </div>
-    <div class="col-12" id="game-cont">
+    <div class="col-12" id="game-cont" style="display: none">
         <div class="container">Pick your move, <span class="p1-name"></span>!</div>
         <div id="move-area" class="row text-center m-3">
             <button class="col btn-primary mx-3" id="move-rock">Rock</button>

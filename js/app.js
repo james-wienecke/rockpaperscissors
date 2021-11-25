@@ -22,17 +22,18 @@ $(document).ready(function() {
                 }
             }
         }
-        this.choice = null;
-        this.choose = function (move) {
-            // moves are chosen with RNG for cpu players
-            if (this.cpu) {
-                this.choice = getRandomRPSGameChoice();
-            } else {
-                this.choice = move;
-            }
-            return this.choice;
-        };
+        this.choice = undefined;
     }
+    // Player prototype methods
+    Player.prototype.choose = function (move) {
+        // moves are chosen with RNG for cpu players
+        if (this.cpu) {
+            this.choice = getRandomRPSGameChoice();
+        } else {
+            this.choice = move;
+        }
+        return this.choice;
+    };
 
     // game round constructor
     function Game (player1, player2) {
@@ -46,69 +47,71 @@ $(document).ready(function() {
         };
         this.winner = null;
         this.result = null;
-        // output a string describing the latest round's results
-        this.stringifyResults = function() {
-            let str = `${this.p1.name} picked ${this.p1.choice}. ${this.p2.name} picked ${this.p2.choice}.`;
-            if (this.winner === 0) {
-                str += ` Game ${this.result}.`;
-            } else {
-                str += ` ${this.winner} wins!`;
-            }
-            return str;
-        }
-        this.runGame = function () {
-           switch (this.p1.choice) {
-               case 'rock':
-                   switch (this.p2.choice) {
-                       case 'rock':
-                           this.winner = 0;
-                           this.result = 'draw';
-                           break;
-                       case 'paper':
-                           this.winner = this.p2.name;
-                           this.result = 'win';
-                           break;
-                       case 'scissors':
-                           this.winner = this.p1.name;
-                           this.result = 'win';
-                           break;
-                   }
-                   break;
-               case 'paper':
-                   switch (this.p2.choice) {
-                       case 'rock':
-                           this.winner = this.p1.name;
-                           this.result = 'win';
-                           break;
-                       case 'paper':
-                           this.winner = 0;
-                           this.result = 'draw';
-                           break;
-                       case 'scissors':
-                           this.winner = this.p2.name;
-                           this.result = 'win';
-                           break;
-                   }
-                   break;
-               case 'scissors':
-                   switch (this.p2.choice) {
-                       case 'rock':
-                           this.winner = this.p2.name;
-                           this.result = 'win';
-                           break;
-                       case 'paper':
-                           this.winner = this.p1.name;
-                           this.result = 'win';
-                           break;
-                       case 'scissors':
-                           this.winner = 0;
-                           this.result = 'draw';
-                           break;
-                   }
-                   break;
-           }
+    }
+    // Game prototype methods
+    Game.prototype.runGame = function () {
+        switch (this.p1.choice) {
+            case 'rock':
+                switch (this.p2.choice) {
+                    case 'rock':
+                        this.winner = 0;
+                        this.result = 'draw';
+                        break;
+                    case 'paper':
+                        this.winner = this.p2.name;
+                        this.result = 'win';
+                        break;
+                    case 'scissors':
+                        this.winner = this.p1.name;
+                        this.result = 'win';
+                        break;
+                }
+                break;
+            case 'paper':
+                switch (this.p2.choice) {
+                    case 'rock':
+                        this.winner = this.p1.name;
+                        this.result = 'win';
+                        break;
+                    case 'paper':
+                        this.winner = 0;
+                        this.result = 'draw';
+                        break;
+                    case 'scissors':
+                        this.winner = this.p2.name;
+                        this.result = 'win';
+                        break;
+                }
+                break;
+            case 'scissors':
+                switch (this.p2.choice) {
+                    case 'rock':
+                        this.winner = this.p2.name;
+                        this.result = 'win';
+                        break;
+                    case 'paper':
+                        this.winner = this.p1.name;
+                        this.result = 'win';
+                        break;
+                    case 'scissors':
+                        this.winner = 0;
+                        this.result = 'draw';
+                        break;
+                }
+                break;
         }
     }
+    Game.prototype.stringifyResults = function() {
+        // output a string describing the latest round's results
+        let str = `${this.p1.name} picked ${this.p1.choice}. ${this.p2.name} picked ${this.p2.choice}.`;
+        if (this.winner === 0) {
+            str += ` Game ${this.result}.`;
+        } else {
+            str += ` ${this.winner} wins!`;
+        }
+        return str;
+    }
+
     // setup stuff
     let games = [];
     let players = [];
@@ -116,11 +119,11 @@ $(document).ready(function() {
     // do NOT leave in production version i s2g
     let DEBUG_MODE = {
         // when enabled, skips setup/personalization steps
-        skipIntro: true,
+        skipIntro: false,
         // if set to value greater than 0, plays value * games automatically
-        autoPlay: 300,
+        autoPlay: 0,
         // console.log round results
-        verboseRounds: true,
+        verboseRounds: false,
         // console.log round history array
         verboseHistory: false,
         // log player win rate (-1 off | 0 player1 | 1 player2 | 2 both)
@@ -160,11 +163,18 @@ $(document).ready(function() {
             $('.p1-name').text(players[0].name);
             $('.p2-name').text(players[1].name);
 
-            // game ready, enable game buttons
+            // make game ready, and enable game buttons
             buttonsReady(players);
         });
     }
+    function pageSetup () {
+        $('game-cont').show();
+    }
     function buttonsReady(players) {
+        // hide name entry area (for now)
+        $('#name-cont').hide();
+        // show game area
+        $('#game-cont').show();
         // select the round's move options
         let options = {
             rock:   $('#move-rock'),
@@ -289,19 +299,29 @@ $(document).ready(function() {
                 .append($roundNumber, $p1Move, $p2Move, $results);
         }
         // create a div to replace the last round's game results with the new round's results
-        function displayRoundResults(round) {
+        function displayRoundResults(round, roundNum) {
             // layout:
             // <div id="game-area" class="m-3 row">
-            //            <div class="col-4" id="game-p1-choice"></div>
-            //             <div class="col-4" id="game-result"></div>
-            //             <div class="col-4" id="game-p2-choice"></div>
+            //            <div class="col-4" id="game-p1-choice">
+            //              <p>P1 move:</p>
+            //              <p>*move*</p>
+            //            </div>
+            //             <div class="col-4" id="game-result">
+            //               <p>Result:</p>
+            //               <p>*result*</p>
+            //             </div>
+            //             <div class="col-4" id="game-p2-choice">
+            //               <p>P2 move:</p>
+            //               <p>*move*</p>
+            //             </div>
             //  </div>
 
             // Player 1's move
             const $p1Choice = $(document.createElement('div'))
                 .addClass('col-4')
-                .text(round.p1.choice)
-                .attr('id', 'game-p1-choice');
+                .attr('id', 'game-p1-choice')
+                .append($(document.createElement('p')).text(`${round.p1.name}'s move:`))
+                .append($(document.createElement('p')).text(round.p1.choice));
 
             // prepare a short string summarizing winner unless it was a draw
             let resultString = '';
@@ -310,14 +330,16 @@ $(document).ready(function() {
             // Round results
             const $gameResult = $(document.createElement('div'))
                 .addClass('col-4')
-                .text(resultString)
-                .attr('id', 'game-result');
+                .attr('id', 'game-result')
+                .append($(document.createElement('p')).text(`Round #${roundNum} result:`))
+                .append($(document.createElement('p')).text(resultString));
 
             // player 2's move
             const $p2Choice = $(document.createElement('div'))
                 .addClass('col-4')
-                .text(round.p2.choice)
-                .attr('id', 'game-p2-choice');
+                .attr('id', 'game-p2-choice')
+                .append($(document.createElement('p')).text(`${round.p2.name}'s move:`))
+                .append($(document.createElement('p')).text(round.p2.choice));
 
             // return a #game-area div to replace the existing one
             return $(document.createElement('div'))
