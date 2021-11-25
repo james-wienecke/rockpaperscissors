@@ -299,19 +299,29 @@ $(document).ready(function() {
                 .append($roundNumber, $p1Move, $p2Move, $results);
         }
         // create a div to replace the last round's game results with the new round's results
-        function displayRoundResults(round) {
+        function displayRoundResults(round, roundNum) {
             // layout:
             // <div id="game-area" class="m-3 row">
-            //            <div class="col-4" id="game-p1-choice"></div>
-            //             <div class="col-4" id="game-result"></div>
-            //             <div class="col-4" id="game-p2-choice"></div>
+            //            <div class="col-4" id="game-p1-choice">
+            //              <p>P1 move:</p>
+            //              <p>*move*</p>
+            //            </div>
+            //             <div class="col-4" id="game-result">
+            //               <p>Result:</p>
+            //               <p>*result*</p>
+            //             </div>
+            //             <div class="col-4" id="game-p2-choice">
+            //               <p>P2 move:</p>
+            //               <p>*move*</p>
+            //             </div>
             //  </div>
 
             // Player 1's move
             const $p1Choice = $(document.createElement('div'))
                 .addClass('col-4')
-                .text(round.p1.choice)
-                .attr('id', 'game-p1-choice');
+                .attr('id', 'game-p1-choice')
+                .append($(document.createElement('p')).text(`${round.p1.name}'s move:`))
+                .append($(document.createElement('p')).text(round.p1.choice));
 
             // prepare a short string summarizing winner unless it was a draw
             let resultString = '';
@@ -320,14 +330,16 @@ $(document).ready(function() {
             // Round results
             const $gameResult = $(document.createElement('div'))
                 .addClass('col-4')
-                .text(resultString)
-                .attr('id', 'game-result');
+                .attr('id', 'game-result')
+                .append($(document.createElement('p')).text(`Round #${roundNum} result:`))
+                .append($(document.createElement('p')).text(resultString));
 
             // player 2's move
             const $p2Choice = $(document.createElement('div'))
                 .addClass('col-4')
-                .text(round.p2.choice)
-                .attr('id', 'game-p2-choice');
+                .attr('id', 'game-p2-choice')
+                .append($(document.createElement('p')).text(`${round.p2.name}'s move:`))
+                .append($(document.createElement('p')).text(round.p2.choice));
 
             // return a #game-area div to replace the existing one
             return $(document.createElement('div'))
