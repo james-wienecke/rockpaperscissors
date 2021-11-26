@@ -47,6 +47,7 @@ $(document).ready(function() {
         };
         this.winner = null;
         this.result = null;
+        this.number = null;
     }
     // Game prototype methods
     Game.prototype.runGame = function () {
@@ -112,6 +113,12 @@ $(document).ready(function() {
         return str;
     }
 
+    // game stringify for localstorage.
+    // single string per game: gamenum,p1name,p1choice,p2name,p2choice,winner,result
+    Game.prototype.stringifyGame = function () {
+        return `${this.number},${this.p1.name},${this.p1.choice},${this.p2.name},${this.p2.choice},${this.winner},${this.result}`;
+    }
+
     // setup stuff
     let games = [];
     let players = [];
@@ -119,7 +126,7 @@ $(document).ready(function() {
     // do NOT leave in production version i s2g
     let DEBUG_MODE = {
         // when enabled, skips setup/personalization steps
-        skipIntro: false,
+        skipIntro: true,
         // if set to value greater than 0, plays value * games automatically
         autoPlay: 0,
         // console.log round results
@@ -127,7 +134,9 @@ $(document).ready(function() {
         // console.log round history array
         verboseHistory: false,
         // log player win rate (-1 off | 0 player1 | 1 player2 | 2 both)
-        logWinrate: -1,
+        logWinrate: 2,
+        // enable localstorage for history
+        localStore: true,
     };
 
     if (DEBUG_MODE.skipIntro) {
@@ -142,8 +151,8 @@ $(document).ready(function() {
             if (DEBUG_MODE.autoPlay > 0) {
                 players[0].cpu = true;
                 for (let i = 0; i <= DEBUG_MODE.autoPlay; i++) {
-                    players[0].choose('rock');
-                    players[1].choose('rock');
+                    players[0].choose();
+                    players[1].choose();
                     gameManagement(players);
                 }
                 players[0].cpu = false;
@@ -175,6 +184,8 @@ $(document).ready(function() {
         $('#name-cont').hide();
         // show game area
         $('#game-cont').show();
+        // load (if any) games from localStorage
+        if(localStorage.length > 0) rebuildGameHistory();
         // select the round's move options
         let options = {
             rock:   $('#move-rock'),
@@ -220,6 +231,10 @@ $(document).ready(function() {
 
         // push results into the game history
         games.push(round);
+        // assign round number to round object
+        round.number = games.length;
+        // save round to localstorage
+        localStorage.setItem(`${round.number}`, round.stringifyGame());
         // debug logging option
         if (DEBUG_MODE.verboseHistory) console.log(games);
         // modify page to display results
@@ -256,14 +271,14 @@ $(document).ready(function() {
             if (games.length === 2) showHistoryTable(); // undo display: none on table head
             // prepare last round's data
             let lastRound = games[games.length - 2];
-            let lastRoundNum = games.length - 1
+            // let lastRoundNum = games.length - 1
             // add a new table row detailing the last round, prepending it so it's latest first
-            $('#game-tbody').prepend(addTableRow(lastRound, lastRoundNum));
+            $('#game-tbody').prepend(addTableRow(lastRound, lastRound.number));
         }
         let round = games[games.length - 1];
-        let roundNum = games.length;
+        // let roundNum = games.length;
         // show this round's results
-        $('#game-area').replaceWith(displayRoundResults(round, roundNum));
+        $('#game-area').replaceWith(displayRoundResults(round, round.number));
 
         // flip the round table's display style back from display:none
         function showHistoryTable() {
@@ -361,9 +376,23 @@ $(document).ready(function() {
         }
     }
 
-    function buildGameHistory(history) {
-        // Todo: create system for saving and loading records from local storage
+    function rebuildGameHistory() {
+        // string per game: gamenum,p1name,p1choice,p2name,p2choice,winner,result
+        //                  0       1      2        3      4        5      6
+        let itemCount = 0;
+        for (let i = 0; i < localStorage.length; i++) {
+            let gameData = localStorage.getItem(`${i}`).split(',');
+            let p1 = { name: gameData[1], choice: gameData[2] };
+            let p2 = { name: gameData[3], choice: gameData[4] };
+            let oldGame = new Game(p1, p2);
+            oldGame.winner = gameData[5];
+            oldGame.result = gameData[6];
+            oldGame.number = gameData[0];
+            games.push(oldGame);
+            itemCount++;
+        }
 
+        console.log(itemCount, 'rebuilt rounds');
     }
 
 });
