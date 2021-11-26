@@ -47,6 +47,7 @@ $(document).ready(function() {
         };
         this.winner = null;
         this.result = null;
+        this.number = null;
     }
     // Game prototype methods
     Game.prototype.runGame = function () {
@@ -112,6 +113,12 @@ $(document).ready(function() {
         return str;
     }
 
+    // game stringify for localstorage.
+    // single string per game: gamenum,p1name,p1choice,p2name,p2choice,winner,result
+    Game.prototype.stringifyGame = function () {
+        return `${this.number},${this.p1.name},${this.p1.choice},${this.p2.name},${this.p2.choice},${this.winner},${this.result}`;
+    }
+
     // setup stuff
     let games = [];
     let players = [];
@@ -121,13 +128,15 @@ $(document).ready(function() {
         // when enabled, skips setup/personalization steps
         skipIntro: true,
         // if set to value greater than 0, plays value * games automatically
-        autoPlay: 100,
+        autoPlay: 0,
         // console.log round results
         verboseRounds: false,
         // console.log round history array
         verboseHistory: false,
         // log player win rate (-1 off | 0 player1 | 1 player2 | 2 both)
-        logWinrate: -1,
+        logWinrate: 2,
+        // enable localstorage for history
+        localStore: true,
     };
 
     if (DEBUG_MODE.skipIntro) {
@@ -220,6 +229,8 @@ $(document).ready(function() {
 
         // push results into the game history
         games.push(round);
+        // assign round number to round object
+        round.number = games.length;
         // debug logging option
         if (DEBUG_MODE.verboseHistory) console.log(games);
         // modify page to display results
@@ -256,14 +267,14 @@ $(document).ready(function() {
             if (games.length === 2) showHistoryTable(); // undo display: none on table head
             // prepare last round's data
             let lastRound = games[games.length - 2];
-            let lastRoundNum = games.length - 1
+            // let lastRoundNum = games.length - 1
             // add a new table row detailing the last round, prepending it so it's latest first
-            $('#game-tbody').prepend(addTableRow(lastRound, lastRoundNum));
+            $('#game-tbody').prepend(addTableRow(lastRound, lastRound.number));
         }
         let round = games[games.length - 1];
-        let roundNum = games.length;
+        // let roundNum = games.length;
         // show this round's results
-        $('#game-area').replaceWith(displayRoundResults(round, roundNum));
+        $('#game-area').replaceWith(displayRoundResults(round, round.number));
 
         // flip the round table's display style back from display:none
         function showHistoryTable() {
@@ -361,7 +372,7 @@ $(document).ready(function() {
         }
     }
 
-    function buildGameHistory(history) {
+    function rebuildGameHistory(history) {
         // Todo: create system for saving and loading records from local storage
 
     }
