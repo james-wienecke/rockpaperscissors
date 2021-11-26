@@ -184,6 +184,8 @@ $(document).ready(function() {
         $('#name-cont').hide();
         // show game area
         $('#game-cont').show();
+        // load (if any) games from localStorage
+        if(localStorage.length > 0) rebuildGameHistory();
         // select the round's move options
         let options = {
             rock:   $('#move-rock'),
@@ -231,6 +233,8 @@ $(document).ready(function() {
         games.push(round);
         // assign round number to round object
         round.number = games.length;
+        // save round to localstorage
+        localStorage.setItem(`${round.number}`, round.stringifyGame());
         // debug logging option
         if (DEBUG_MODE.verboseHistory) console.log(games);
         // modify page to display results
@@ -372,9 +376,23 @@ $(document).ready(function() {
         }
     }
 
-    function rebuildGameHistory(history) {
-        // Todo: create system for saving and loading records from local storage
+    function rebuildGameHistory() {
+        // string per game: gamenum,p1name,p1choice,p2name,p2choice,winner,result
+        //                  0       1      2        3      4        5      6
+        let itemCount = 0;
+        for (let i = 0; i < localStorage.length; i++) {
+            let gameData = localStorage.getItem(`${i}`).split(',');
+            let p1 = { name: gameData[1], choice: gameData[2] };
+            let p2 = { name: gameData[3], choice: gameData[4] };
+            let oldGame = new Game(p1, p2);
+            oldGame.winner = gameData[5];
+            oldGame.result = gameData[6];
+            oldGame.number = gameData[0];
+            games.push(oldGame);
+            itemCount++;
+        }
 
+        console.log(itemCount, 'rebuilt rounds');
     }
 
 });
