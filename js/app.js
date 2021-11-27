@@ -186,6 +186,7 @@ $(document).ready(function() {
         $('#game-cont').show();
         // load (if any) games from localStorage
         if(localStorage.length > 0) rebuildGameHistory();
+        // console.log(localStorage);
         // select the round's move options
         let options = {
             rock:   $('#move-rock'),
@@ -381,7 +382,8 @@ $(document).ready(function() {
         //                  0       1      2        3      4        5      6
         let itemCount = 0;
         for (let i = 0; i < localStorage.length; i++) {
-            let gameData = localStorage.getItem(`${i}`).split(',');
+            let gameData = localStorage.getItem(`${i}`);
+            gameData.split(',');
             let p1 = { name: gameData[1], choice: gameData[2] };
             let p2 = { name: gameData[3], choice: gameData[4] };
             let oldGame = new Game(p1, p2);
