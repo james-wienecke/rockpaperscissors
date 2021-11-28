@@ -269,7 +269,7 @@ $(document).ready(function() {
     function roundOverHtmlManagement () {
         // only show log of rounds if there are more than 1 round played
         if (games.length > 1) {
-            if (games.length === 2) showHistoryTable(); // undo display: none on table head
+            if (games.length >= 2) showHistoryTable(); // undo display: none on table head
             // prepare last round's data
             let lastRound = games[games.length - 2];
             // let lastRoundNum = games.length - 1
@@ -390,7 +390,8 @@ $(document).ready(function() {
                 let p1 = {name: gameData[1], choice: gameData[2]};
                 let p2 = {name: gameData[3], choice: gameData[4]};
                 let oldGame = new Game(p1, p2);
-                oldGame.winner = gameData[5];
+                // oldGame.winner = gameData[5];
+                oldGame.winner = (gameData[5] !== '0') ? gameData[5] : gameData[6];
                 oldGame.result = gameData[6];
                 oldGame.number = gameData[0];
                 console.log(oldGame);
