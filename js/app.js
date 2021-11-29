@@ -123,10 +123,9 @@ $(document).ready(function() {
     let games = [];
     let players = [];
 
-    // do NOT leave in production version i s2g
     let DEBUG_MODE = {
         // when enabled, skips setup/personalization steps
-        skipIntro: true,
+        skipIntro: false,
         // if set to value greater than 0, plays value * games automatically
         autoPlay: 0,
         // console.log round results
@@ -134,11 +133,26 @@ $(document).ready(function() {
         // console.log round history array
         verboseHistory: false,
         // log player win rate (-1 off | 0 player1 | 1 player2 | 2 both)
-        logWinrate: 2,
+        logWinrate: -1,
         // enable localstorage for history
         localStore: true,
     };
 
+    // allow user localstorage usage if and only if they check the option
+    let saveEnabled = true;
+
+    // setup options functions
+    $('#clear-savelocal').on('click', function (event) {
+        // if user clicks, we clear localStorage
+        localStorage.clear();
+    });
+    $('#check-savelocal').on('click', function (event) {
+        // allow user to disable/enable saving game records
+        $('#check-savelocal').prop('checked') ? saveEnabled = true : saveEnabled = false;
+    });
+
+    // this conditional is for two different game starts: debug mode opens game with a variety of options while
+    // launching w/o debug mode allows the user to go through the full process of setup
     if (DEBUG_MODE.skipIntro) {
         (function(){ // this function is just for testing, skips game ready state
             // setup players, for now a user and a cpu
@@ -149,12 +163,17 @@ $(document).ready(function() {
 
             // debug mode autoplay
             if (DEBUG_MODE.autoPlay > 0) {
+                // flag user's player object for cpu control
                 players[0].cpu = true;
+                // autoPlay a number of rounds
                 for (let i = 0; i <= DEBUG_MODE.autoPlay; i++) {
+                    // both players choose randomly
                     players[0].choose();
                     players[1].choose();
+                    // do normal game and dom updates
                     gameManagement(players);
                 }
+                // un-flag user's player object for cpu control
                 players[0].cpu = false;
             }
 
@@ -176,17 +195,15 @@ $(document).ready(function() {
             buttonsReady(players);
         });
     }
-    function pageSetup () {
-        $('game-cont').show();
-    }
+
     function buttonsReady(players) {
         // hide name entry area (for now)
         $('#name-cont').hide();
         // show game area
         $('#game-cont').show();
+        $('#game-table').show();
         // load (if any) games from localStorage
         if(localStorage.length > 0) rebuildGameHistory();
-        console.log(localStorage);
         // select the round's move options
         let options = {
             rock:   $('#move-rock'),
@@ -210,6 +227,7 @@ $(document).ready(function() {
             gameManagement(players);
         });
     }
+
     // take care of all the game processing after player choices have been made
     function gameManagement (players) {
         // evaluate a new round
@@ -235,7 +253,9 @@ $(document).ready(function() {
         // assign round number to round object
         round.number = games.length;
         // save round to localstorage
-        localStorage.setItem(`${round.number}`, round.stringifyGame());
+        if (saveEnabled && DEBUG_MODE.localStore) {
+            localStorage.setItem(`${round.number}`, round.stringifyGame());
+        }
         // debug logging option
         if (DEBUG_MODE.verboseHistory) console.log(games);
         // modify page to display results
@@ -268,7 +288,6 @@ $(document).ready(function() {
 
     function roundOverHtmlManagement () {
         let round = games[games.length - 1];
-        // let roundNum = games.length;
         $('#game-tbody').prepend(addTableRow(round, round.number));
         // show this round's results
         $('#game-area').replaceWith(displayRoundResults(round, round.number));
@@ -297,18 +316,16 @@ $(document).ready(function() {
         const $p2Move = $(document.createElement('td'))
             .text(round.p2.choice);
         const $results = $(document.createElement('td'))
-            .addClass(`${changeColorByWinner(round)}`)
-            // .css('background-color', 'blue')
+            .css('color', changeColorByWinner(round))
             .text((round.winner !== 0) ? round.winner : round.result);
-
 
         return $(document.createElement('tr'))
             .append($roundNumber, $p1Move, $p2Move, $results);
     }
     function changeColorByWinner(round) {
-        if (round.winner === 0) return '.draw-win';
-        else if (round.winner === 'CPU') return '.p2-win';
-        else return '.p1-win';
+        if (round.winner === 0) return 'darkslategrey';
+        else if (round.winner === 'CPU') return 'red';
+        else return 'green';
     }
     // create a div to replace the last round's game results with the new round's results
     function displayRoundResults(round, roundNum) {
@@ -342,6 +359,7 @@ $(document).ready(function() {
         // Round results
         const $gameResult = $(document.createElement('div'))
             .addClass('col-4')
+            .css('color', changeColorByWinner(round))
             .attr('id', 'game-result')
             .append($(document.createElement('p')).text(`Round #${roundNum} result:`))
             .append($(document.createElement('p')).text(resultString));
@@ -375,32 +393,28 @@ $(document).ready(function() {
     function rebuildGameHistory() {
         // string per game: gamenum,p1name,p1choice,p2name,p2choice,winner,result
         //                  0       1      2        3      4        5      6
-        let itemCount = 0;
-        // if(localStorage.length >= 2) showHistoryTable();
         for (let i = 0; i <= localStorage.length; i++) {
+            // using the array index we access saved games in localStorage in ascending order
             let gameData = localStorage.getItem(`${i}`);
             if (typeof gameData === 'string') {
+                // split the localStorage string value into an array
                 gameData = gameData.split(',');
-                console.log(gameData);
-                console.log(typeof gameData)
+                // assemble a new game using the saved data to recreate players and choices
                 let p1 = {name: gameData[1], choice: gameData[2]};
                 let p2 = {name: gameData[3], choice: gameData[4]};
+                // create new Game and feed it the saved data
                 let oldGame = new Game(p1, p2);
-                // oldGame.winner = gameData[5];
+                // post-constructor value modification to perfectly recreate Game object
                 oldGame.winner = (gameData[5] !== '0') ? gameData[5] : gameData[6];
                 oldGame.result = gameData[6];
                 oldGame.number = gameData[0];
-                console.log(oldGame);
+                // pop it back into this session's games array
                 games.push(oldGame);
+                // add corresponding table row for this old game data
                 $('#game-tbody').prepend(addTableRow(oldGame, oldGame.number));
-                itemCount++;
             }
         }
-
-        console.log(itemCount, 'rebuilt rounds');
-
+        // mostly unnecessary but better safe than sorry: sort games array by game number
         games.sort((a, b) => (a.number > b.number) ? 1 : -1);
-        // roundOverHtmlManagement();
     }
-
 });

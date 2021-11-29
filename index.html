@@ -40,8 +40,8 @@
     </div>
 </section>
 <section class="row my-4">
-    <div class="col-12" id="game-history">
-        <table class="table" id="game-table">
+    <div class="col-12 overflow-auto" id="game-history">
+        <table class="table" id="game-table" style="display: none">
             <thead>
             <tr>
                 <th scope="col">Round #</th>
@@ -53,6 +53,25 @@
             <tbody id="game-tbody">
             </tbody>
         </table>
+    </div>
+</section>
+<section class="row my-4">
+    <div class="dropup">
+        <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            Game options
+        </button>
+        <div class="dropdown-menu px-4" aria-labelledby="dropdownMenuButton">
+            <div class="form-group">
+                <a class="dropdown-item ml-0 mr-auto px-0" href="#" id="clear-savelocal">Clear local storage of game history</a>
+            </div>
+            <div class="form-group">
+                <div class="form-check">
+                    <input checked type="checkbox" class="form-check-input" id="check-savelocal">
+                    <label class="form-check-label" for="check-savelocal">
+                        Allow saving of games to local storage
+                    </label>
+                </div>
+        </div>
     </div>
 </section>
 
