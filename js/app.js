@@ -190,14 +190,13 @@ $(document).ready(function() {
             buttonsReady(players);
         });
     }
-    function pageSetup () {
-        $('game-cont').show();
-    }
+
     function buttonsReady(players) {
         // hide name entry area (for now)
         $('#name-cont').hide();
         // show game area
         $('#game-cont').show();
+        $('#game-table').show();
         // load (if any) games from localStorage
         if(localStorage.length > 0) rebuildGameHistory();
         // select the round's move options
@@ -223,6 +222,7 @@ $(document).ready(function() {
             gameManagement(players);
         });
     }
+
     // take care of all the game processing after player choices have been made
     function gameManagement (players) {
         // evaluate a new round
