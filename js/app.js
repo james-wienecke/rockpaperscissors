@@ -186,7 +186,7 @@ $(document).ready(function() {
         $('#game-cont').show();
         // load (if any) games from localStorage
         if(localStorage.length > 0) rebuildGameHistory();
-        // console.log(localStorage);
+        console.log(localStorage);
         // select the round's move options
         let options = {
             rock:   $('#move-rock'),
@@ -214,8 +214,6 @@ $(document).ready(function() {
     function gameManagement (players) {
         // evaluate a new round
         let round = playRound(players)
-        // assign round number to round object
-        round.number = games.length + 1;
         // update player stats
         updatePlayerStats(players, round);
         // debug options for verbose logging of player win rates
@@ -234,6 +232,8 @@ $(document).ready(function() {
 
         // push results into the game history
         games.push(round);
+        // assign round number to round object
+        round.number = games.length;
         // save round to localstorage
         localStorage.setItem(`${round.number}`, round.stringifyGame());
         // debug logging option
@@ -267,28 +267,11 @@ $(document).ready(function() {
     }
 
     function roundOverHtmlManagement () {
-        // only show log of rounds if there are more than 1 round played
-        if (games.length > 1) {
-            if (games.length >= 2) showHistoryTable(); // undo display: none on table head
-            // prepare last round's data
-            let lastRound = games[games.length - 2];
-            // let lastRoundNum = games.length - 1
-            // add a new table row detailing the last round, prepending it so it's latest first
-            $('#game-tbody').prepend(addTableRow(lastRound, lastRound.number));
-        }
         let round = games[games.length - 1];
         // let roundNum = games.length;
+        $('#game-tbody').prepend(addTableRow(round, round.number));
         // show this round's results
         $('#game-area').replaceWith(displayRoundResults(round, round.number));
-
-
-
-
-    }
-
-    // flip the round table's display style back from display:none
-    function showHistoryTable() {
-        $('#game-table').show();
     }
 
     // addTableRow builds a new table row element with the last round's details
@@ -314,10 +297,18 @@ $(document).ready(function() {
         const $p2Move = $(document.createElement('td'))
             .text(round.p2.choice);
         const $results = $(document.createElement('td'))
+            .addClass(`${changeColorByWinner(round)}`)
+            // .css('background-color', 'blue')
             .text((round.winner !== 0) ? round.winner : round.result);
+
 
         return $(document.createElement('tr'))
             .append($roundNumber, $p1Move, $p2Move, $results);
+    }
+    function changeColorByWinner(round) {
+        if (round.winner === 0) return '.draw-win';
+        else if (round.winner === 'CPU') return '.p2-win';
+        else return '.p1-win';
     }
     // create a div to replace the last round's game results with the new round's results
     function displayRoundResults(round, roundNum) {
@@ -385,7 +376,7 @@ $(document).ready(function() {
         // string per game: gamenum,p1name,p1choice,p2name,p2choice,winner,result
         //                  0       1      2        3      4        5      6
         let itemCount = 0;
-        if(localStorage.length > 2) showHistoryTable();
+        // if(localStorage.length >= 2) showHistoryTable();
         for (let i = 0; i <= localStorage.length; i++) {
             let gameData = localStorage.getItem(`${i}`);
             if (typeof gameData === 'string') {
@@ -407,6 +398,8 @@ $(document).ready(function() {
         }
 
         console.log(itemCount, 'rebuilt rounds');
+
+        games.sort((a, b) => (a.number > b.number) ? 1 : -1);
         // roundOverHtmlManagement();
     }
 
