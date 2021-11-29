@@ -123,7 +123,6 @@ $(document).ready(function() {
     let games = [];
     let players = [];
 
-    // do NOT leave in production version i s2g
     let DEBUG_MODE = {
         // when enabled, skips setup/personalization steps
         skipIntro: false,
@@ -139,16 +138,21 @@ $(document).ready(function() {
         localStore: true,
     };
 
+    // allow user localstorage usage if and only if they check the option
     let saveEnabled = true;
 
     // setup options functions
     $('#clear-savelocal').on('click', function (event) {
+        // if user clicks, we clear localStorage
         localStorage.clear();
     });
     $('#check-savelocal').on('click', function (event) {
+        // allow user to disable/enable saving game records
         $('#check-savelocal').prop('checked') ? saveEnabled = true : saveEnabled = false;
     });
 
+    // this conditional is for two different game starts: debug mode opens game with a variety of options while
+    // launching w/o debug mode allows the user to go through the full process of setup
     if (DEBUG_MODE.skipIntro) {
         (function(){ // this function is just for testing, skips game ready state
             // setup players, for now a user and a cpu
@@ -279,7 +283,6 @@ $(document).ready(function() {
 
     function roundOverHtmlManagement () {
         let round = games[games.length - 1];
-        // let roundNum = games.length;
         $('#game-tbody').prepend(addTableRow(round, round.number));
         // show this round's results
         $('#game-area').replaceWith(displayRoundResults(round, round.number));
@@ -310,7 +313,6 @@ $(document).ready(function() {
         const $results = $(document.createElement('td'))
             .css('color', changeColorByWinner(round))
             .text((round.winner !== 0) ? round.winner : round.result);
-
 
         return $(document.createElement('tr'))
             .append($roundNumber, $p1Move, $p2Move, $results);
@@ -386,7 +388,6 @@ $(document).ready(function() {
     function rebuildGameHistory() {
         // string per game: gamenum,p1name,p1choice,p2name,p2choice,winner,result
         //                  0       1      2        3      4        5      6
-        let itemCount = 0;
         for (let i = 0; i <= localStorage.length; i++) {
             // using the array index we access saved games in localStorage in ascending order
             let gameData = localStorage.getItem(`${i}`);
@@ -406,10 +407,9 @@ $(document).ready(function() {
                 games.push(oldGame);
                 // add corresponding table row for this old game data
                 $('#game-tbody').prepend(addTableRow(oldGame, oldGame.number));
-                itemCount++;
             }
         }
-        // possibly unnecessary but better safe than sorry: sort games array by game number
+        // mostly unnecessary but better safe than sorry: sort games array by game number
         games.sort((a, b) => (a.number > b.number) ? 1 : -1);
     }
 });
