@@ -139,12 +139,15 @@ $(document).ready(function() {
         localStore: true,
     };
 
+    let saveEnabled = true;
+
     // setup options functions
     $('#clear-savelocal').on('click', function (event) {
         localStorage.clear();
-        console.log(localStorage);
     });
-    // $('#check-savelocal').on()
+    $('#check-savelocal').on('click', function (event) {
+        $('#check-savelocal').prop('checked') ? saveEnabled = true : saveEnabled = false;
+    });
 
     if (DEBUG_MODE.skipIntro) {
         (function(){ // this function is just for testing, skips game ready state
@@ -193,7 +196,6 @@ $(document).ready(function() {
         $('#game-cont').show();
         // load (if any) games from localStorage
         if(localStorage.length > 0) rebuildGameHistory();
-        console.log(localStorage);
         // select the round's move options
         let options = {
             rock:   $('#move-rock'),
@@ -242,7 +244,9 @@ $(document).ready(function() {
         // assign round number to round object
         round.number = games.length;
         // save round to localstorage
-        localStorage.setItem(`${round.number}`, round.stringifyGame());
+        if (saveEnabled && DEBUG_MODE.localStore) {
+            localStorage.setItem(`${round.number}`, round.stringifyGame());
+        }
         // debug logging option
         if (DEBUG_MODE.verboseHistory) console.log(games);
         // modify page to display results
@@ -383,31 +387,29 @@ $(document).ready(function() {
         // string per game: gamenum,p1name,p1choice,p2name,p2choice,winner,result
         //                  0       1      2        3      4        5      6
         let itemCount = 0;
-        // if(localStorage.length >= 2) showHistoryTable();
         for (let i = 0; i <= localStorage.length; i++) {
+            // using the array index we access saved games in localStorage in ascending order
             let gameData = localStorage.getItem(`${i}`);
             if (typeof gameData === 'string') {
+                // split the localStorage string value into an array
                 gameData = gameData.split(',');
-                console.log(gameData);
-                console.log(typeof gameData)
+                // assemble a new game using the saved data to recreate players and choices
                 let p1 = {name: gameData[1], choice: gameData[2]};
                 let p2 = {name: gameData[3], choice: gameData[4]};
+                // create new Game and feed it the saved data
                 let oldGame = new Game(p1, p2);
-                // oldGame.winner = gameData[5];
+                // post-constructor value modification to perfectly recreate Game object
                 oldGame.winner = (gameData[5] !== '0') ? gameData[5] : gameData[6];
                 oldGame.result = gameData[6];
                 oldGame.number = gameData[0];
-                console.log(oldGame);
+                // pop it back into this session's games array
                 games.push(oldGame);
+                // add corresponding table row for this old game data
                 $('#game-tbody').prepend(addTableRow(oldGame, oldGame.number));
                 itemCount++;
             }
         }
-
-        console.log(itemCount, 'rebuilt rounds');
-
+        // possibly unnecessary but better safe than sorry: sort games array by game number
         games.sort((a, b) => (a.number > b.number) ? 1 : -1);
-        // roundOverHtmlManagement();
     }
-
 });
