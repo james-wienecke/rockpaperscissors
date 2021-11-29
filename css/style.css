@@ -1,9 +1,4 @@
-.p1-win td {
-    color: green !important;
-}
-.p2-win td {
-    color: red !important;
-}
-.draw-win td {
-    color: darkslategrey !important;
+#game-history {
+    height: 60vh;
+    max-height: 100%;
 }

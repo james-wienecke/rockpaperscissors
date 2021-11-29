@@ -126,7 +126,7 @@ $(document).ready(function() {
     // do NOT leave in production version i s2g
     let DEBUG_MODE = {
         // when enabled, skips setup/personalization steps
-        skipIntro: true,
+        skipIntro: false,
         // if set to value greater than 0, plays value * games automatically
         autoPlay: 0,
         // console.log round results
@@ -134,10 +134,17 @@ $(document).ready(function() {
         // console.log round history array
         verboseHistory: false,
         // log player win rate (-1 off | 0 player1 | 1 player2 | 2 both)
-        logWinrate: 2,
+        logWinrate: -1,
         // enable localstorage for history
         localStore: true,
     };
+
+    // setup options functions
+    $('#clear-savelocal').on('click', function (event) {
+        localStorage.clear();
+        console.log(localStorage);
+    });
+    // $('#check-savelocal').on()
 
     if (DEBUG_MODE.skipIntro) {
         (function(){ // this function is just for testing, skips game ready state
@@ -297,8 +304,7 @@ $(document).ready(function() {
         const $p2Move = $(document.createElement('td'))
             .text(round.p2.choice);
         const $results = $(document.createElement('td'))
-            .addClass(`${changeColorByWinner(round)}`)
-            // .css('background-color', 'blue')
+            .css('color', changeColorByWinner(round))
             .text((round.winner !== 0) ? round.winner : round.result);
 
 
@@ -306,9 +312,9 @@ $(document).ready(function() {
             .append($roundNumber, $p1Move, $p2Move, $results);
     }
     function changeColorByWinner(round) {
-        if (round.winner === 0) return '.draw-win';
-        else if (round.winner === 'CPU') return '.p2-win';
-        else return '.p1-win';
+        if (round.winner === 0) return 'darkslategrey';
+        else if (round.winner === 'CPU') return 'red';
+        else return 'green';
     }
     // create a div to replace the last round's game results with the new round's results
     function displayRoundResults(round, roundNum) {
@@ -342,6 +348,7 @@ $(document).ready(function() {
         // Round results
         const $gameResult = $(document.createElement('div'))
             .addClass('col-4')
+            .css('color', changeColorByWinner(round))
             .attr('id', 'game-result')
             .append($(document.createElement('p')).text(`Round #${roundNum} result:`))
             .append($(document.createElement('p')).text(resultString));
