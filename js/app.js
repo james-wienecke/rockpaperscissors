@@ -163,12 +163,17 @@ $(document).ready(function() {
 
             // debug mode autoplay
             if (DEBUG_MODE.autoPlay > 0) {
+                // flag user's player object for cpu control
                 players[0].cpu = true;
+                // autoPlay a number of rounds
                 for (let i = 0; i <= DEBUG_MODE.autoPlay; i++) {
+                    // both players choose randomly
                     players[0].choose();
                     players[1].choose();
+                    // do normal game and dom updates
                     gameManagement(players);
                 }
+                // un-flag user's player object for cpu control
                 players[0].cpu = false;
             }
 
